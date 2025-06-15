@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page 2</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5fff5;
+        }
+        .header {
+            background-color: #4caf50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #3e8e41;
+        }
+        .bridge-test {
+            margin-top: 20px;
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        #bridge-status {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Test Page 2</h1>
+    <p>Testing WebView navigation</p>
+</div>
+
+<div class="content">
+    <h2>Page 2 Content</h2>
+    <p>This is the second test page. You can navigate to other pages using the buttons below.</p>
+    <p>Current location: <code id="current-url">loading...</code></p>
+
+    <div class="nav-buttons">
+        <button onclick="navigateToPage(1)">Go to Page 1</button>
+        <button onclick="navigateToPage(3)">Go to Page 3</button>
+    </div>
+</div>
+
+<div class="bridge-test">
+    <h3>JS Bridge Test</h3>
+    <p>Test the communication between JavaScript and Kotlin:</p>
+    <button onclick="testBridge()">Test JS Bridge</button>
+    <div id="bridge-status">Bridge status will appear here</div>
+</div>
+
+<script>
+
+    // Update current URL
+    document.getElementById('current-url').textContent = window.location.href;
+    
+    // Navigation functions
+    function navigateToPage(pageNum) {
+        window.location.href = `test-page-${pageNum}.html`;
+    }
+    
+    // Test the JS Bridge
+    function testBridge() {
+        const statusElement = document.getElementById('bridge-status');
+        
+        if (window.kmpJsBridge) {
+            statusElement.textContent = 'Testing bridge...';
+            
+            try {
+                window.kmpJsBridge.callNative('pageInfo', JSON.stringify({
+                    page: 2,
+                    title: 'Test Page 2',
+                    timestamp: Date.now()
+                }), function(response) {
+                    statusElement.textContent = 'Bridge response: ' + response;
+                    statusElement.className = 'success';
+                });
+            } catch (error) {
+                statusElement.textContent = 'Bridge error: ' + error.message;
+                statusElement.className = 'error';
+            }
+        } else {
+            statusElement.textContent = 'Bridge not available! (window.kmpJsBridge is undefined)';
+            statusElement.className = 'error';
+        }
+    }
+</script>
+</body>
+</html>

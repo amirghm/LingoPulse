@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>کلماتیک 🧩</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+<style>
+  body {
+    background-color: #FFA500;
+    font-family: 'Vazir', sans-serif;
+  }
+  .container {
+    max-width: 480px;
+  }
+  .emoji-box {
+    font-size: 4rem;
+    background: #fff;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    cursor: default;
+    user-select: none;
+  }
+  .input-word {
+    background: #fff;
+    border: 2px solid transparent;
+    padding: 0.7rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 1.1rem;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+  }
+  .input-word:focus {
+    outline: none;
+    border-color: #cc7a00;
+    box-shadow: 0 0 5px #cc7a00;
+  }
+  button {
+    background-color: #cc7a00;
+    color: white;
+    padding: 0.75rem 1.2rem;
+    border-radius: 0.6rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+  }
+  button:hover {
+    background-color: #e08a00;
+  }
+  .result-msg {
+    margin-top: 0.8rem;
+    font-weight: 600;
+    min-height: 2rem;
+  }
+  footer {
+    font-size: 0.8rem;
+    color: #fff;
+    margin-top: 2rem;
+    text-align: center;
+  }
+  @media (max-width: 480px) {
+    .emoji-box {
+      font-size: 3rem;
+      padding: 1rem;
+    }
+    button {
+      padding: 0.6rem;
+      font-size: 1rem;
+    }
+  }
+</style>
+</head>
+<body class="flex flex-col items-center justify-start min-h-screen py-8">
+  <div class="container bg-white rounded-2xl shadow-lg p-6">
+    <h1 class="text-3xl font-extrabold mb-4 text-center" style="color: #cc7a00;">کلماتیک 🧩</h1>
+    <p class="text-center mb-6 text-gray-700">یک بازی حدس کلمه با ۱۰ ایموجی خفن، کلمه صحیح را حدس بزن!</p>
+
+    <div class="emoji-box text-center mb-6" id="emojiBox">🍎</div>
+
+    <input type="text" id="guessInput" class="input-word" autocomplete="off" placeholder="کلمه را وارد کنید..." />
+    <button id="submitBtn" class="mt-4">حدس بزن</button>
+    <div class="result-msg text-center mt-3" id="resultMsg"></div>
+
+    <div class="text-center mt-6 text-gray-600">کلمه‌های حدس زده شده: <span id="guessedWords">هیچ</span></div>
+  </div>
+
+  <footer>ساخته شده با 💙 توسط دوست برنامه‌نویس تو، وای‌بی</footer>
+
+  <script>
+    // Data: مجموعه ایموجی ها و کلمات معادل
+    const wordPairs = [
+      { emoji: '🍎', word: 'سیب' },
+      { emoji: '🐱', word: 'گربه' },
+      { emoji: '🚗', word: 'ماشین' },
+      { emoji: '🌞', word: 'خورشید' },
+      { emoji: '📚', word: 'کتاب' },
+      { emoji: '🐦', word: 'پرنده' },
+      { emoji: '🍰', word: 'کیک' },
+      { emoji: '🌲', word: 'درخت' },
+      { emoji: '🎈', word: 'بادکنک' },
+      { emoji: '⚽', word: 'فوتبال' }
+    ];
+
+    // Shuffle array helper
+    function shuffle(array) {
+      for (let i = array.length -1; i >0; i--) {
+        const j = Math.floor(Math.random() * (i+1));
+        [array[i],array[j]] = [array[j],array[i]];
+      }
+      return array;
+    }
+
+    // Cookies helper
+    function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + days*24*60*60*1000);
+      const expires = "expires=" + d.toUTCString();
+      document.cookie = name + "=" + encodeURIComponent(value) + ";" + expires + ";path=/;SameSite=Strict;Secure";
+    }
+
+    function getCookie(name) {
+      const cname = name + "=";
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const ca = decodedCookie.split(';');
+      for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1);
+        if (c.indexOf(cname) == 0) return c.substring(cname.length, c.length);
+      }
+      return "";
+    }
+
+    // Game State
+    let shuffledPairs = shuffle(wordPairs.slice());
+    let currentIndex = 0;
+    let guessed = [];
+
+    // Restore state from cookies
+    const savedIndex = getCookie('kalamatic_index');
+    const savedGuessed = getCookie('kalamatic_guessed');
+    if (savedIndex && !isNaN(savedIndex)) currentIndex = parseInt(savedIndex);
+    if (savedGuessed) guessed = JSON.parse(savedGuessed);
+
+    // DOM elements
+    const emojiBox = document.getElementById('emojiBox');
+    const guessInput = document.getElementById('guessInput');
+    const submitBtn = document.getElementById('submitBtn');
+    const resultMsg = document.getElementById('resultMsg');
+    const guessedWords = document.getElementById('guessedWords');
+
+    function updateEmoji() {
+      if (currentIndex >= shuffledPairs.length) {
+        emojiBox.textContent = '🎉';
+        resultMsg.textContent = '😍 تبریک! همه کلمات را حدس زدی!';
+        submitBtn.disabled = true;
+        guessInput.disabled = true;
+        guessedWords.textContent = guessed.length > 0 ? guessed.join(', ') : 'هیچ';
+        return;
+      }
+      emojiBox.textContent = shuffledPairs[currentIndex].emoji;
+      guessInput.value = '';
+      resultMsg.textContent = '';
+      guessedWords.textContent = guessed.length > 0 ? guessed.join(', ') : 'هیچ';
+      guessInput.focus();
+    }
+
+    function saveState() {
+      setCookie('kalamatic_index', currentIndex, 7);
+      setCookie('kalamatic_guessed', JSON.stringify(guessed), 7);
+    }
+
+    submitBtn.addEventListener('click', () => {
+      let userGuess = guessInput.value.trim();
+      if (!userGuess) {
+        resultMsg.textContent = 'لطفا یک کلمه وارد کنید!';
+        return;
+      }
+
+      const correctWord = shuffledPairs[currentIndex].word;
+      if (userGuess === correctWord) {
+        resultMsg.textContent = 'آفرین! درست حدس زدی 😊';
+        guessed.push(userGuess);
+        currentIndex++;
+        saveState();
+        setTimeout(updateEmoji, 1200);
+      } else {
+        resultMsg.textContent = 'نه! دوباره تلاش کن 🙃';
+      }
+    });
+
+    // Enter key support
+    guessInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitBtn.click();
+    });
+
+    // Initialize
+    updateEmoji();
+  </script>
+</body>
+</html>
