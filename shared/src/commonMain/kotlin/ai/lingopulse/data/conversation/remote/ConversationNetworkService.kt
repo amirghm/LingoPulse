@@ -1,5 +1,6 @@
 package ai.lingopulse.data.conversation.remote
 
+import ai.lingopulse.BuildKonfig
 import ai.lingopulse.domain.conversation.model.*
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -30,8 +31,8 @@ import kotlinx.serialization.encodeToString
 class ConversationNetworkService(
     private val client: HttpClient,
     private val baseUrl: String = "https://api.openai.com/v1",
-    private val apiKey: String = "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", // TODO: Replace with actual API key
-    private val assistantId: String = "asst_1BG5nYmfNfFg2TZTBoDLMU9s" // TODO: Replace with actual assistant ID
+    private val apiKey: String = BuildKonfig.OPENAI_KEY, // TODO: Replace with actual API key
+    private val assistantId: String = BuildKonfig.ASSISTANT_ID // TODO: Replace with actual assistant ID
 ) : ConversationNetworkAPI {
 
     override suspend fun createThread(request: CreateThreadRequest): CreateThreadResponse {

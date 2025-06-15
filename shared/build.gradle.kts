@@ -127,5 +127,7 @@ buildkonfig {
     defaultConfigs {
         buildConfigField(STRING, "RESTACK_AI_BASE_URL","${project.property("RESTACK_AI_BASE_URL")}")
         buildConfigField(STRING, "RESTACK_AI_API_KEY", "${project.property("RESTACK_AI_API_KEY")}")
+        buildConfigField(STRING, "OPENAI_KEY", "${project.property("OPENAI_KEY")}")
+        buildConfigField(STRING, "ASSISTANT_ID", "${project.property("ASSISTANT_ID")}")
     }
 }
