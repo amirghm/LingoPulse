@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Qaza Keeper 🕌</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+<style>
+  /* Material3 Expressive Casual vibe */
+  body {
+    background: #F8F4FF;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #2E2651;
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  header {
+    height: 56px; /* 56dp toolbar size */
+    background: #7C3AED; /* slick fancy purple */
+    box-shadow: 0 2px 10px rgba(124, 58, 237, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.25rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    user-select: none;
+  }
+  main {
+    padding: 72px 24px 24px;
+    flex: 1 1 auto;
+    max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+  h1 {
+    margin: 0;
+  }
+  section {
+    margin-bottom: 2rem;
+  }
+  label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1.5px solid transparent;
+    background-color: #EDE7F6;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+  }
+  input[type="number"]:focus {
+    outline: none;
+    border-color: #7C3AED;
+    background-color: #F6F0FF;
+  }
+  button {
+    margin-top: 1.5rem;
+    background-color: #7C3AED;
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 0 6px 10px rgba(124, 58, 237, 0.5);
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #633BBC;
+  }
+  .prayer-item {
+    background: white;
+    border-radius: 16px;
+    padding: 20px 16px 16px 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.12);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .prayer-name {
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: #4E4187;
+  }
+  .prayer-count {
+    font-weight: 700;
+    font-size: 1rem;
+    background: #EDE7F6;
+    border-radius: 9999px;
+    padding: 4px 12px;
+    min-width: 48px;
+    text-align: center;
+    user-select: none;
+  }
+  .footer {
+    padding: 16px 24px;
+    font-size: 0.9rem;
+    color: #7B6FC6;
+    text-align: center;
+    user-select: none;
+    box-sizing: border-box;
+  }
+  @media (prefers-color-scheme: dark) {
+    body {
+      background: #1B1338;
+      color: #DDD9FF;
+    }
+    input[type="number"] {
+      background-color: #3E2A7E;
+      border-color: #684BDB;
+      color: #DDD9FF;
+    }
+    input[type="number"]:focus {
+      background-color: #522FD1;
+      border-color: #9E82FF;
+    }
+    button {
+      background-color: #9B7AFF;
+      box-shadow: 0 6px 10px rgba(155, 122, 255, 0.6);
+    }
+    button:hover {
+      background-color: #7B56D9;
+    }
+    .prayer-item {
+      background: #2B1F57;
+      box-shadow: 0 4px 12px rgba(155, 122, 255, 0.2);
+    }
+    .prayer-name {
+      color: #B5A9FC;
+    }
+    .prayer-count {
+      background: #4B3AA0;
+      color: #E4DBFF;
+    }
+    .footer {
+      color: #A49AFB;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  Qaza Keeper 🕌
+</header>
+<main>
+  <section aria-label="Set missed prayers">
+    <form id="prayersForm">
+      <label for="fajr">Fajr (فجر)</label>
+      <input type="number" id="fajr" name="fajr" min="0" step="1" value="0" autocomplete="off" />
+
+      <label for="dhuhr">Dhuhr (ظهر)</label>
+      <input type="number" id="dhuhr" name="dhuhr" min="0" step="1" value="0" autocomplete="off" />
+
+      <label for="asr">Asr (عصر)</label>
+      <input type="number" id="asr" name="asr" min="0" step="1" value="0" autocomplete="off" />
+
+      <label for="maghrib">Maghrib (مغرب)</label>
+      <input type="number" id="maghrib" name="maghrib" min="0" step="1" value="0" autocomplete="off" />
+
+      <label for="isha">Isha (عشاء)</label>
+      <input type="number" id="isha" name="isha" min="0" step="1" value="0" autocomplete="off" />
+
+      <button type="submit">Save Missed Prayers</button>
+    </form>
+  </section>
+
+  <section aria-label="Current missed prayers">
+    <h2 class="sr-only">Missed Prayers Summary</h2>
+    <div id="prayersList"></div>
+  </section>
+</main>
+<footer class="footer">Qaza Keeper © 2024</footer>
+
+<script>
+  const form = document.getElementById('prayersForm');
+  const list = document.getElementById('prayersList');
+
+  const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+  const prayerLabels = {
+    fajr: 'Fajr (فجر)',
+    dhuhr: 'Dhuhr (ظهر)',
+    asr: 'Asr (عصر)',
+    maghrib: 'Maghrib (مغرب)',
+    isha: 'Isha (عشاء)'
+  };
+  
+  function loadPrayers() {
+    const data = {};
+    prayers.forEach(p => {
+      const val = parseInt(getCookie('qaza_' + p)) || 0;
+      data[p] = val;
+    });
+    return data;
+  }
+
+  function savePrayers(data) {
+    prayers.forEach(p => {
+      setCookie('qaza_' + p, data[p], 365);
+    });
+  }
+
+  function renderList(data) {
+    list.innerHTML = '';
+    prayers.forEach(p => {
+      const count = data[p];
+      const item = document.createElement('div');
+      item.className = 'prayer-item';
+      item.innerHTML = `
+        <span class="prayer-name">${prayerLabels[p]}</span>
+        <span class="prayer-count" aria-label="Missed ${prayerLabels[p]} prays count">${count}</span>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const data = {};
+    prayers.forEach(p => {
+      let val = parseInt(formData.get(p));
+      val = isNaN(val) || val < 0 ? 0 : val;
+      data[p] = val;
+    });
+    savePrayers(data);
+    renderList(data);
+  });
+
+  // Cookie helpers with secure modern flags
+  function setCookie(name, value, days) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; Secure; SameSite=Lax`;
+  }
+  function getCookie(name) {
+    return document.cookie.split('; ').reduce((r, v) => {
+      const parts = v.split('=');
+      return parts[0] === name ? decodeURIComponent(parts[1]) : r;
+    }, undefined);
+  }
+
+  // Load on start
+  document.addEventListener('DOMContentLoaded', () => {
+    const data = loadPrayers();
+    prayers.forEach(p => {
+      form[p].value = data[p];
+    });
+    renderList(data);
+  });
+</script>
+</body>
+</html>

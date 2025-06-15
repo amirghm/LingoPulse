@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TaskVibe 📝</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+  body {
+    margin: 0;
+    background-color: #E9F0FB;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    color: #1A1A1A;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    background-color: #4A90E2;
+    color: white;
+    padding: 1.25rem 0;
+    font-weight: 700;
+    font-size: 1.8rem;
+    text-align: center;
+    box-shadow: 0 3px 8px rgba(74,144,226,0.7);
+    user-select: none;
+  }
+  main {
+    flex: 1 0 auto;
+    max-width: 480px;
+    margin: 1.5rem auto 2rem;
+    width: 90%;
+  }
+  h2 {
+    margin-bottom: 1rem;
+    color: #4A90E2;
+    font-weight: 700;
+  }
+
+  form {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(74,144,226,0.25);
+    padding: 1.3rem 1.8rem;
+    margin-bottom: 2rem;
+  }
+  label {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.4rem;
+    margin-bottom: 1.2rem;
+    border: 2px solid #B0C6EA;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    transition: border-color 0.3s ease;
+  }
+  input:focus {
+    outline: none;
+    border-color: #4A90E2;
+    box-shadow: 0 0 8px #4A90E2;
+  }
+  button {
+    background-color: #4A90E2;
+    color: white;
+    border: none;
+    padding: 0.7rem 1.4rem;
+    font-weight: 700;
+    font-size: 1.2rem;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+  }
+  button:hover,
+  button:focus {
+    background-color: #3b75c2;
+  }
+
+  section {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(74,144,226,0.2);
+    padding: 1rem;
+  }
+
+  #tasksContainer {
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+  .task {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #D5E1F2;
+    padding: 0.75rem 0.5rem;
+  }
+  .task:last-child {
+    border-bottom: none;
+  }
+  .task-text {
+    font-size: 1.1rem;
+    flex-grow: 1;
+    padding-left: 0.2rem;
+  }
+  .task-completed {
+    text-decoration: line-through;
+    color: #8aa7d0;
+    font-style: italic;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 0.6rem;
+  }
+  .btn-icon {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1.3rem;
+    color: #4A90E2;
+    transition: color 0.25s ease;
+  }
+  .btn-icon:hover {
+    color: #3b75c2;
+  }
+
+  /* Scrollbar styling for tasks container */
+  #tasksContainer::-webkit-scrollbar {
+    width: 8px;
+  }
+  #tasksContainer::-webkit-scrollbar-track {
+    background: #f1f5fb;
+    border-radius: 10px;
+  }
+  #tasksContainer::-webkit-scrollbar-thumb {
+    background: #a7bce5;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 480px) {
+    main {
+      width: 95%;
+    }
+  }
+</style>
+</head>
+<body>
+<header>TaskVibe 📝</header>
+<main>
+  <h2>Your To-Do List</h2>
+  <form id="taskForm" autocomplete="off">
+    <label for="taskInput">New Task</label>
+    <input type="text" id="taskInput" name="taskInput" placeholder="Type your task here..." required maxlength="100" />
+    <button type="submit">Add Task</button>
+  </form>
+
+  <section>
+    <div id="tasksContainer">
+      <p style="color:#666; text-align:center; margin-top:1rem;">Add tasks to get started! 🎉</p>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Utility to set a cookie securely
+  function setCookie(name, value, days) {
+    const expires = new Date(Date.now() + days*24*60*60*1000).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict; Secure`;
+  }
+
+  // Utility to get a cookie
+  function getCookie(name) {
+    const cookies = document.cookie.split('; ').reduce((acc, cur) => {
+      const [k,v] = cur.split('=');
+      acc[k] = decodeURIComponent(v);
+      return acc;
+    }, {});
+    return cookies[name];
+  }
+
+  const form = document.getElementById('taskForm');
+  const taskInput = document.getElementById('taskInput');
+  const tasksContainer = document.getElementById('tasksContainer');
+
+  let tasks = [];
+
+  // Load tasks from cookie
+  function loadTasks() {
+    try {
+      const data = getCookie('taskVibeTasks');
+      if (data) {
+        tasks = JSON.parse(data);
+      } else {
+        tasks = [];
+      }
+    } catch(e) {
+      tasks = [];
+    }
+  }
+
+  // Save tasks to cookie
+  function saveTasks() {
+    setCookie('taskVibeTasks', JSON.stringify(tasks), 30);
+  }
+
+  // Render tasks list
+  function renderTasks() {
+    tasksContainer.innerHTML = '';
+    if(tasks.length === 0) {
+      tasksContainer.innerHTML = '<p style="color:#666; text-align:center; margin-top:1rem;">Add tasks to get started! 🎉</p>';
+      return;
+    }
+
+    tasks.forEach((task, idx) => {
+      const taskDiv = document.createElement('div');
+      taskDiv.className = 'task';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = task.completed;
+      checkbox.setAttribute('aria-label', `Mark task \"${task.text}\" as completed`);
+      checkbox.onchange = () => {
+        tasks[idx].completed = checkbox.checked;
+        saveTasks();
+        renderTasks();
+      };
+
+      const taskText = document.createElement('span');
+      taskText.className = 'task-text';
+      if(task.completed) {
+        taskText.classList.add('task-completed');
+      }
+      taskText.textContent = task.text;
+
+      const btnGroup = document.createElement('div');
+      btnGroup.className = 'btn-group';
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'btn-icon';
+      removeBtn.title = 'Remove task';
+      removeBtn.setAttribute('aria-label', `Remove task \"${task.text}\"`);
+      removeBtn.innerHTML = '&#10006;';
+      removeBtn.onclick = () => {
+        tasks.splice(idx,1);
+        saveTasks();
+        renderTasks();
+      };
+
+      btnGroup.appendChild(removeBtn);
+
+      taskDiv.appendChild(checkbox);
+      taskDiv.appendChild(taskText);
+      taskDiv.appendChild(btnGroup);
+
+      tasksContainer.appendChild(taskDiv);
+    });
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const text = taskInput.value.trim();
+    if(text.length === 0) return;
+
+    tasks.push({ text: text, completed: false });
+    saveTasks();
+    renderTasks();
+    form.reset();
+    taskInput.focus();
+  });
+
+  // Initial load & render
+  loadTasks();
+  renderTasks();
+</script>
+</body>
+</html>

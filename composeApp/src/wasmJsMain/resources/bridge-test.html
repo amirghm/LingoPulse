@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Bridge Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 5px 5px 0;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0055aa;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .output {
+            background: #eee;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 20px;
+            min-height: 100px;
+        }
+        .success {
+            color: #22863a;
+            font-weight: bold;
+        }
+        .error {
+            color: #cb2431;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<h1>Lingo Pulse JavaScript Bridge Test</h1>
+
+<p>This page tests the communication between JavaScript and Kotlin via the JS bridge.</p>
+
+<div>
+    <button id="testPing">Test Ping</button>
+    <button id="sendMessage">Send Custom Message</button>
+    <button id="checkBridge">Check Bridge Status</button>
+</div>
+
+<h3>Bridge Status:</h3>
+<pre id="bridgeStatus">Checking...</pre>
+
+<h3>Output Log:</h3>
+<div class="output" id="output"></div>
+
+<script>
+
+    // Log function to display output on page
+    function log(message, isError) {
+        const output = document.getElementById('output');
+        const msgElem = document.createElement('div');
+        msgElem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        if (isError) {
+            msgElem.classList.add('error');
+        } else if (message.includes('success') || message.includes('received')) {
+            msgElem.classList.add('success');
+        }
+        output.prepend(msgElem);
+    }
+
+    // Update bridge status
+    function updateBridgeStatus() {
+        const statusElem = document.getElementById('bridgeStatus');
+        if (window.kmpJsBridge) {
+            statusElem.textContent = "✅ Bridge available: window.kmpJsBridge is defined";
+            statusElem.classList.add('success');
+        } else {
+            statusElem.textContent = "❌ Bridge not available: window.kmpJsBridge is undefined";
+            statusElem.classList.add('error');
+        }
+    }
+
+    // Test bridge ping
+    document.getElementById('testPing').addEventListener('click', function() {
+        if (window.kmpJsBridge) {
+            log("Sending ping request to Kotlin...");
+            window.kmpJsBridge.callNative('ping', JSON.stringify({ timestamp: Date.now() }), function(response) {
+                log(`Received response: ${response}`);
+            });
+        } else {
+            log("Bridge not available - cannot send ping", true);
+        }
+    });
+
+    // Send custom message
+    document.getElementById('sendMessage').addEventListener('click', function() {
+        if (window.kmpJsBridge) {
+            const message = {
+                type: 'custom',
+                content: 'Hello from JavaScript!',
+                timestamp: Date.now()
+            };
+            log(`Sending custom message: ${JSON.stringify(message)}`);
+            window.kmpJsBridge.callNative('custom', JSON.stringify(message), function(response) {
+                log(`Received response: ${response}`);
+            });
+        } else {
+            log("Bridge not available - cannot send message", true);
+        }
+    });
+
+    // Check bridge status
+    document.getElementById('checkBridge').addEventListener('click', function() {
+        updateBridgeStatus();
+        log(`Bridge check: ${window.kmpJsBridge ? "Available" : "Not available"}`);
+    });
+
+    // Run initial check
+    window.addEventListener('load', function() {
+        updateBridgeStatus();
+        log("Page loaded, checking bridge status...");
+
+        // Try automatic ping after 2 seconds
+        setTimeout(function() {
+            if (window.kmpJsBridge) {
+                log("Auto-sending ping request to Kotlin...");
+                window.kmpJsBridge.callNative('ping', JSON.stringify({ timestamp: Date.now() }), function(response) {
+                    log(`Auto-ping received response: ${response}`);
+                });
+            } else {
+                log("Auto-test failed: Bridge not available", true);
+            }
+        }, 2000);
+
+});
+</script>
+</body>
+</html>
